@@ -316,6 +316,7 @@ class ElectrumWindow(QMainWindow):
         tabs.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setCentralWidget(tabs)
         self.create_status_bar()
+        self.tray_icon()
         self.toggle_QR_window(self.receive_tab_mode == 2)
 
         g = self.config.get("winpos-qt",[100, 100, 840, 400])
@@ -338,6 +339,24 @@ class ElectrumWindow(QMainWindow):
             n = 3 if self.wallet.seed else 2
             tabs.setCurrentIndex (n)
             tabs.setCurrentIndex (0)
+
+    def tray_icon(self):
+        self.trayIcon = QSystemTrayIcon(QIcon(":icons/electrum.png"))
+        self.menu = QMenu()
+        sizeaction = self.menu.addAction("Minimize/Maximize")
+        exitaction = self.menu.addAction("Exit")
+        self.trayIcon.setContextMenu(self.menu)
+        self.connect(sizeaction,QtCore.SIGNAL('triggered()'), self.toggle_minmax)
+        self.connect(self.trayIcon,QtCore.SIGNAL('activated(QSystemTrayIcon::ActivationReason)'), self.toggle_minmax)
+        self.connect(exitaction,QtCore.SIGNAL('triggered()'), self.close)
+        self.trayIcon.show()
+
+    def toggleminmax(self,reason=None):
+        if reason == 2 or reason == None:
+            if self.isHidden():
+                self.show()
+            else:
+                self.hide()
 
     def close(self):
         QMainWindow.close(self)
